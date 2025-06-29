@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Şans Merkezi - Modern UI</title>
+<style>
+  /* Reset */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+  }
+  #app {
+    background: rgba(20, 20, 35, 0.85);
+    width: 900px;
+    max-width: 95vw;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    padding: 30px 40px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 90vh;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+  }
+  .game-btn {
+    background: linear-gradient(45deg, #ffd700, #ffa500);
+    border: none;
+    color: #222;
+    font-weight: 600;
+    font-size: 1.3rem;
+    padding: 15px 35px;
+    margin: 10px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.6);
+    transition: all 0.3s ease;
+    user-select: none;
+  }
+  .game-btn:hover {
+    background: linear-gradient(45deg, #ffa500, #ffcc00);
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.9);
+    transform: translateY(-3px);
+  }
+  .game-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 7px rgba(255, 215, 0, 0.7);
+  }
+  #leaderboard, #playersList, #chatBox {
+    position: fixed;
+    width: 230px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px 25px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px #ffd700aa;
+    font-size: 0.9rem;
+    max-height: 320px;
+    overflow-y: auto;
+    user-select: none;
+  }
+  #leaderboard {
+    top: 20px;
+    left: 20px;
+  }
+  #playersList {
+    top: 20px;
+    right: 20px;
+  }
+  #chatBox {
+    bottom: 20px;
+    left: 20px;
+    max-height: 300px;
+    padding: 15px 20px;
+  }
+  #leaderboard h3, #playersList h3, #chatBox h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-align: center;
+    color: #ffd700;
+    text-shadow: 0 0 8px #ffd700;
+    letter-spacing: 1.5px;
+  }
+  #chatMessages {
+    height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+  }
+  
+  .chat-message {
+    margin-bottom: 8px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: rgba(255, 215, 0, 0.1);
+    font-size: 0.85rem;
+    word-wrap: break-word;
+  }
+  
+  .chat-message .username {
+    font-weight: bold;
+    color: #ffd700;
+  }
+  
+  .chat-message .message {
+    color: #fff;
+    margin-left: 5px;
+  }
+  
+  #chatInput {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  
+  #chatInput::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  #chatInput:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+  }
+  #leaderboardList li, #playersOnline li {
+    padding: 6px 0;
+    border-bottom: 1px solid #ffd70033;
+    font-weight: 600;
+    color: #fff;
+  }
+  #leaderboardList li:last-child, #playersOnline li:last-child {
+    border-bottom: none;
+  }
+  #gameArea {
+    flex-grow: 1;
+    margin-top: 10px;
+    background: rgba(30,30,50,0.7);
+    border-radius: 20px;
+    padding: 25px 30px;
+    font-size: 1.25rem;
+    color: #fff;
+    box-shadow: inset 0 0 20px #222;
+    min-height: 200px;
+    user-select: text;
+    overflow-wrap: break-word;
+  }
+  #balance {
+    margin-top: 15px;
+    font-size: 1.3rem;
+    text-align: center;
+    color: #90ee90;
+    font-weight: 700;
+    text-shadow: 0 0 8px #32cd32;
+    user-select: none;
+  }
+  #blackjackBtns {
+    margin-top: 20px;
+    text-align: center;
+  }
+  #blackjackBtns button {
+    background: linear-gradient(45deg, #32cd32, #228b22);
+    color: white;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0 12px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px #228b2233;
+    transition: all 0.3s ease;
+    user-select: none;
+    border: none;
+  }
+  #blackjackBtns button:hover {
+    background: linear-gradient(45deg, #28a428, #196619);
+    box-shadow: 0 8px 20px #196619bb;
+    transform: translateY(-2px);
+  }
+  #blackjackBtns button:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 7px #196619bb;
+  }
+  #startScreen {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,15,40,0.95);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+  }
+  #startScreen label {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+  }
+  #startScreen input {
+    font-size: 1.3rem;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: none;
+    width: 280px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px #ffd700aa inset;
+    outline: none;
+    color: #222;
+  }
+  #startScreen input::placeholder {
+    color: #999;
+  }
+  #startScreen button {
+    background: linear-gradient(45deg, #ffd700, #ffa500);
+    border: none;
+    border-radius: 25px;
+    padding: 15px 60px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #222;
+    box-shadow: 0 0 20px #ffd700;
+    transition: all 0.3s ease;
+    user-select: none;
+  }
+  #startScreen button:hover {
+    background: linear-gradient(45deg, #ffa500, #ffcc00);
+    box-shadow: 0 0 30px #ffcc00;
+    transform: translateY(-3px);
+  }
+  #startScreen button:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 15px #ffcc00;
+  }
+  @media (max-width: 768px) {
+    #app {
+      width: 100%;
+      padding: 20px;
+    }
+    #leaderboard, #playersList {
+      width: 160px;
+      font-size: 0.85rem;
+      max-height: 240px;
+      padding: 15px 18px;
+    }
+  }
+  @media (max-width: 500px) {
+    body {
+      padding: 10px;
+      align-items: center;
+    }
+    #leaderboard, #playersList, #chatBox {
+      position: static;
+      width: 100%;
+      max-height: none;
+      box-shadow: none;
+      background: transparent;
+      color: #fff;
+      padding: 10px 0 5px 0;
+      font-size: 1rem;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    #leaderboard h3, #playersList h3, #chatBox h3 {
+      margin-bottom: 8px;
+    }
+    #chatMessages {
+      height: 120px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+    #app {
+      padding: 20px 15px;
+    }
+    #gameArea {
+      min-height: 220px;
+    }
+    .game-btn {
+      padding: 12px 20px;
+      font-size: 1rem;
+      margin: 6px 3px;
+    }
+    #balance {
+      font-size: 1.1rem;
+    }
+    #blackjackBtns button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <h1>🎲 Şans Merkezi</h1>
+  <div>
+    <button class="game-btn" onclick="coinFlipPrompt()">🪙 Coin Flip</button>
+    <button class="game-btn" onclick="playSlot()">🎰 Slot</button>
+    <button class="game-btn" onclick="startBlackjack()">♠️ Blackjack</button>
+  </div>
+  <div id="gameArea">Bir oyun seç ve şansını dene!</div>
+  <div id="balance">Bakiyen: 0₺</div>
+</div>
+
+<div id="leaderboard">
+  <h3>🏆 Leaderboard</h3>
+  <ol id="leaderboardList"></ol>
+</div>
+
+<div id="playersList">
+  <h3>👥 Oyuncular</h3>
+  <ul id="playersOnline"></ul>
+</div>
+
+<div id="chatBox">
+  <h3>💬 Sohbet</h3>
+  <div id="chatMessages"></div>
+  <input id="chatInput" type="text" placeholder="Mesaj yaz..." maxlength="100" />
+</div>
+
+<div id="startScreen">
+  <label for="playerName">Adın ne?</label>
+  <input id="playerName" placeholder="Adını yaz" maxlength="15" />
+  <button onclick="startGame()">Başla</button>
+</div>
+
+<script>
+  let money = 500;
+  const betAmount = 50;
+  let playerName = "";
+  let playerOnlineList = [];
+  let chatMessages = []; // Initialize chat messages array
+  
+  // In-memory storage instead of localStorage
+  let gameData = {
+    players: {},
+    leaderboard: []
+  };
+
+  // Get DOM elements
+  const balanceEl = document.getElementById("balance");
+  const gameAreaEl = document.getElementById("gameArea");
+  const leaderboardListEl = document.getElementById("leaderboardList");
+  const playersOnlineEl = document.getElementById("playersOnline");
+  const startScreenEl = document.getElementById("startScreen");
+  const playerNameInput = document.getElementById("playerName");
+  const chatInputEl = document.getElementById("chatInput");
+  const chatMessagesEl = document.getElementById("chatMessages");
+
+  let playerCards = [];
+  let dealerCards = [];
+  let blackjackActive = false;
+
+  // Allow Enter key to start game
+  playerNameInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      startGame();
+    }
+  });
+
+  // Chat functionality
+  chatInputEl.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+  function sendMessage() {
+    const message = chatInputEl.value.trim();
+    if (message.length === 0) return;
+    
+    const timestamp = new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+    const chatMessage = {
+      username: playerName,
+      message: message,
+      timestamp: timestamp
+    };
+    
+    chatMessages.push(chatMessage);
+    
+    // Keep only last 50 messages
+    if (chatMessages.length > 50) {
+      chatMessages = chatMessages.slice(-50);
+    }
+    
+    updateChat();
+    chatInputEl.value = '';
+  }
+
+  function updateChat() {
+    chatMessagesEl.innerHTML = '';
+    chatMessages.slice(-20).forEach(msg => {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'chat-message';
+      messageDiv.innerHTML = `<span class="username">${msg.username}:</span><span class="message">${msg.message}</span>`;
+      chatMessagesEl.appendChild(messageDiv);
+    });
+    
+    // Auto scroll to bottom
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  function addSystemMessage(message) {
+    const timestamp = new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+    chatMessages.push({
+      username: 'Sistem',
+      message: message,
+      timestamp: timestamp
+    });
+    updateChat();
+  }
+
+  function startGame() {
+    const nameInput = playerNameInput.value.trim();
+    if (nameInput.length < 2) {
+      alert("Lütfen geçerli bir isim gir!");
+      return;
+    }
+    playerName = nameInput;
+    startScreenEl.style.display = "none";
+
+    loadData();
+    addPlayerOnline();
+    updateBalance();
+    updateLeaderboard();
+    updatePlayersOnline();
+    updateChat(); // Initialize chat
+    addSystemMessage(`${playerName} oyuna katıldı!`);
+    gameAreaEl.innerHTML = `Hoş geldin, <b>${playerName}</b>! Oyunlardan birini seçip oynamaya başlayabilirsin.`;
+  }
+
+  function loadData() {
+    // Check if player exists in memory
+    if (gameData.players[playerName]) {
+      money = gameData.players[playerName];
+    } else {
+      money = 500;
+      gameData.players[playerName] = money;
+    }
+
+    // Initialize leaderboard if empty
+    if (gameData.leaderboard.length === 0) {
+      gameData.leaderboard = [{name: playerName, money: money}];
+    }
+    
+    playerOnlineList = [...gameData.leaderboard];
+  }
+
+  function updateBalance() {
+    balanceEl.innerText = `Bakiyen: ${money}₺`;
+    gameData.players[playerName] = money;
+  }
+
+  function updateLeaderboard() {
+    const idx = playerOnlineList.findIndex(p => p.name === playerName);
+    if (idx !== -1) {
+      playerOnlineList[idx].money = money;
+    } else {
+      playerOnlineList.push({name: playerName, money: money});
+    }
+    playerOnlineList.sort((a,b) => b.money - a.money);
+    gameData.leaderboard = [...playerOnlineList];
+
+    leaderboardListEl.innerHTML = "";
+    playerOnlineList.slice(0, 10).forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = `${p.name}: ${p.money}₺`;
+      leaderboardListEl.appendChild(li);
+    });
+  }
+
+  function updatePlayersOnline() {
+    playersOnlineEl.innerHTML = "";
+    playerOnlineList.slice(0, 10).forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p.name;
+      playersOnlineEl.appendChild(li);
+    });
+  }
+
+  function addPlayerOnline() {
+    const idx = playerOnlineList.findIndex(p => p.name === playerName);
+    if (idx === -1) {
+      playerOnlineList.push({name: playerName, money: money});
+      gameData.leaderboard = [...playerOnlineList];
+    }
+  }
+
+  function canBet() {
+    if (money < betAmount) {
+      alert("Yetersiz bakiye!");
+      return false;
+    }
+    return true;
+  }
+
+  // Coinflip
+  function coinFlipPrompt() {
+    if (!canBet()) return;
+
+    const choice = prompt("Yazı mı Tura mı? (yazı/tura)");
+    if (!choice || (choice.toLowerCase() !== "yazı" && choice.toLowerCase() !== "tura")) {
+      alert("Sadece 'yazı' veya 'tura' yaz!");
+      return;
+    }
+
+    money -= betAmount;
+    updateBalance();
+
+    const result = Math.random() < 0.5 ? "yazı" : "tura";
+    let msg = `🪙 Sonuç: ${result.toUpperCase()} <br>`;
+    if (choice.toLowerCase() === result) {
+      msg += `Tebrikler, kazandın! +${betAmount * 2}₺`;
+      money += betAmount * 2;
+      addSystemMessage(`${playerName} coin flip'te kazandı! (+${betAmount * 2}₺)`);
+    } else {
+      msg += "Kaybettin.";
+      addSystemMessage(`${playerName} coin flip'te kaybetti.`);
+    }
+
+    updateBalance();
+    updateLeaderboard();
+    updatePlayersOnline();
+
+    gameAreaEl.innerHTML = msg;
+  }
+
+  // Slot
+  function playSlot() {
+    if (!canBet()) return;
+
+    money -= betAmount;
+    updateBalance();
+
+    const items = ["🍒", "🍋", "💎", "🍇", "🍀"];
+    const a = items[Math.floor(Math.random() * items.length)];
+    const b = items[Math.floor(Math.random() * items.length)];
+    const c = items[Math.floor(Math.random() * items.length)];
+    let msg = `🎰 ${a} | ${b} | ${c}<br>`;
+
+    if (a === b && b === c) {
+      msg += `Jackpot! +${betAmount * 3}₺`;
+      money += betAmount * 3;
+      addSystemMessage(`🎰 ${playerName} JACKPOT kazandı! (+${betAmount * 3}₺)`);
+    } else if (a === b || b === c || a === c) {
+      msg += `İkili eşleşme! +${Math.floor(betAmount * 1.5)}₺`;
+      money += Math.floor(betAmount * 1.5);
+      addSystemMessage(`${playerName} slot'ta ikili eşleşme! (+${Math.floor(betAmount * 1.5)}₺)`);
+    } else {
+      msg += "Kaybettin.";
+      addSystemMessage(`${playerName} slot'ta kaybetti.`);
+    }
+
+    updateBalance();
+    updateLeaderboard();
+    updatePlayersOnline();
+
+    gameAreaEl.innerHTML = msg;
+  }
+
+  // Blackjack
+  function startBlackjack() {
+    if (!canBet()) return;
+
+    money -= betAmount;
+    updateBalance();
+
+    playerCards = [drawCard(), drawCard()];
+    dealerCards = [drawCard(), drawCard()];
+    blackjackActive = true;
+    showBlackjack();
+    updateLeaderboard();
+    updatePlayersOnline();
+  }
+
+  function drawCard() {
+    return Math.floor(Math.random() * 10) + 2;
+  }
+
+  function sum(arr) {
+    return arr.reduce((a, b) => a + b, 0);
+  }
+
+  function showBlackjack(end = false) {
+    let text = `<div style="margin-bottom:12px;"><strong>Senin kartların:</strong> ${playerCards.join(", ")} (Toplam: ${sum(playerCards)})</div>`;
+    text += `<div style="margin-bottom:12px;"><strong>Rakip:</strong> ${end ? dealerCards.join(", ") + " (Toplam: " + sum(dealerCards) + ")" : "??, " + dealerCards[1]}</div>`;
+
+    if (!end && blackjackActive) {
+      text += `
+        <div id="blackjackBtns" style="margin-top:15px;">
+          <button onclick="hit()">Kart Çek</button>
+          <button onclick="stand()">Dur</button>
+        </div>
+      `;
+    }
+
+    gameAreaEl.innerHTML = text;
+  }
+
+  function hit() {
+    if (!blackjackActive) return;
+    
+    playerCards.push(drawCard());
+    const playerSum = sum(playerCards);
+    
+    if (playerSum > 21) {
+      blackjackActive = false;
+      showBlackjack(true);
+      setTimeout(() => {
+        gameAreaEl.innerHTML += "<br><strong>Bust! Kaybettin.</strong>";
+        addSystemMessage(`${playerName} blackjack'te bust oldu.`);
+      }, 500);
+    } else if (playerSum === 21) {
+      stand();
+    } else {
+      showBlackjack();
+    }
+  }
+
+  function stand() {
+    if (!blackjackActive) return;
+    
+    blackjackActive = false;
+    
+    // Dealer plays
+    while (sum(dealerCards) < 17) {
+      dealerCards.push(drawCard());
+    }
+    
+    const playerSum = sum(playerCards);
+    const dealerSum = sum(dealerCards);
+    
+    showBlackjack(true);
+    
+    setTimeout(() => {
+      let result = "";
+      if (dealerSum > 21) {
+        result = "Rakip bust! Kazandın! +" + (betAmount * 2) + "₺";
+        money += betAmount * 2;
+        addSystemMessage(`${playerName} blackjack'te kazandı! (+${betAmount * 2}₺)`);
+      } else if (playerSum > dealerSum) {
+        result = "Kazandın! +" + (betAmount * 2) + "₺";
+        money += betAmount * 2;
+        addSystemMessage(`${playerName} blackjack'te kazandı! (+${betAmount * 2}₺)`);
+      } else if (playerSum === dealerSum) {
+        result = "Berabere! +" + betAmount + "₺";
+        money += betAmount;
+        addSystemMessage(`${playerName} blackjack'te berabere kaldı.`);
+      } else {
+        result = "Kaybettin.";
+        addSystemMessage(`${playerName} blackjack'te kaybetti.`);
+      }
+      
+      gameAreaEl.innerHTML += "<br><strong>" + result + "</strong>";
+      updateBalance();
+      updateLeaderboard();
+      updatePlayersOnline();
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>
